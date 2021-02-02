@@ -1,0 +1,169 @@
+plugins {
+    id 'java-library'
+}
+
+apply from: "config.gradle"
+
+sourceCompatibility = System.getProperty("java.version")
+
+def include_map = rootProject.ext.dependencies
+def module_map = rootProject.ext.module_exclude
+def group_map = rootProject.ext.group_exclude
+
+dependencies {
+
+	// 依赖本地项目工程下的某个module
+	// compile project(':CommonsModule')
+	// 依赖某个jar文件
+	// complie files('libs/xxx.jar')
+	// 依赖libs目录下所有以.jar结尾的文件
+    // complie fileTree(dir: 'libs', include: ['*.jar'])
+	// 依赖libs目录下除了xxx.jar以外的所有以.jar结尾的文件
+	// complie fileTree(dir: 'libs', exclude: ['xxx.jar'], include: ['*.jar'])
+
+	// compile fileTree(dir:'module', include:['*.jar'])
+
+	include_map.each { key, value ->
+		println "include key=" + key + " value=" + value
+		if (module_map != null && module_map.containsKey(key)) {
+			compile (value) {
+				def exclude_list = module_map[key]
+				for(String exclude_value in exclude_list) {
+					exclude module: exclude_value
+					println "module exclude key=" + key + " value=" + exclude_value
+//					logger.info('module exclude key---{} value......{}', key, exclude_value)
+				}
+			}
+			return
+		}
+		if (group_map != null && group_map.containsKey(key)) {
+			compile (value) {
+				def exclude_list = group_map[key]
+				for(String exclude_value in exclude_list) {
+					exclude group: exclude_value
+					println "group exclude key=" + key + " value=" + exclude_value
+//					logger.info('group exclude key---{} value......{}', key, exclude_value)
+				}
+			}
+			return
+		}
+		compile value
+	}
+}
+
+repositories {
+    jcenter()
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+    println 'SensitiveWords---default encoding......'
+}
+
+sourceSets {
+	main {
+		java {
+			srcDir 'src/main/java'
+		}
+		resources {
+			srcDir 'src/main/resources'
+//			srcDirs = ['src/main/resources', 'src/main/resources-dev']
+		}
+	}
+
+	test {
+		java {
+			srcDir 'src/test/java'
+		}
+		resources {
+			srcDir 'src/test/resources'
+		}
+	}
+}
+
+processResources {
+    println 'SensitiveWords---process resources......'
+	exclude { "**/*.*" }
+}
+
+jar {
+	println 'SensitiveWords---builder jar......'
+	// 需要生成的jar包的名字
+	archivesBaseName = rootProject.ext.jar_name
+    manifest {
+		attributes("Manifest-Version": "1.0")
+		attributes("Bundle-Description": "Core dirty filter processing")
+		attributes("Built-Author": "Gaonan")
+		attributes("Build-Jdk": System.getProperty("java.version"))
+		attributes("Created-By": "gradle " + this.gradle.gradleVersion)
+		Date date = new Date();
+		attributes("Build-Date": date.toString())
+		attributes("Build-Name": rootProject.ext.part_name)
+		attributes("Build-Version": rootProject.ext.version)
+        attributes("Class-Path": configurations.compile.collect { "libs/$it.name" }.join(' '))
+//		attributes("Main-Class" : "com.perfect.DatabaseMain")
+
+//		-javaagent:[path]
+//		attributes("Premain-Class": "org.gof.core.support.ClassReloader")
+//		attributes("Can-Redefine-Classes": true)
+// 		attributes("Can-Retransform-Classes": true)
+    }
+}
+
+tasks.withType(Jar) {
+	println 'SensitiveWords---destination directory......'
+	//$rootDir 取项目的顶级目录
+	File directory = file("$rootDir/build")
+	destinationDirectory.fileValue(directory)
+}
+
+task copyJars(type: Copy) {
+	println 'SensitiveWords---copy jars......'
+	copy {
+		from configurations.runtime
+		into './libs'
+		include '*.jar';
+	}
+	for(String path in rootProject.ext.projects) {
+		println("copy jar path --- " + path);
+		copy {
+			from 'build/libs';
+			into path
+			include rootProject.ext.jar_name;
+		}
+	}
+}
+
+compileJava.dependsOn 'copyJars'
+
+// ------------------- 推送 ------------------- //
+task deleteJar {
+	println 'SensitiveWords---delete jars......'
+	for(String path in rootProject.ext.projects) {
+		println("delete path --- " + path);
+		FileTree files = fileTree(path)
+		files.visit{ element ->
+			String name = element.getName()
+			if(name != null && name.equals(rootProject.ext.part_name)) {
+				println("delete jars --- " + element.file);
+				delete element.file
+			}
+		}
+	}
+}
+
+task deleteResources {
+	println 'SensitiveWords---delete resources......'
+}
+
+task copyResources(type: Copy) {
+	println 'SensitiveWords---copy resource......'
+	from 'src/main/resources'
+	into './resources'
+}
+
+task publish(type: Copy) {
+	println 'SensitiveWords---publish......'
+}
+
+publish.dependsOn = ['deleteJar', 'deleteResources', 'copyResources'];

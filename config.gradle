@@ -1,0 +1,46 @@
+ext {
+
+	version = '1.0.0'
+	part_name = 'Sensitive-words'
+	jar_name = part_name + version
+
+	projects = [
+//		'../GameModule/libs',
+//		'../CdkModule/libs'
+	]
+
+	dependencies = [
+		"commons-lang3" : "org.apache.commons:commons-lang3:3.11",
+		"commons-codec" : "commons-codec:commons-codec:1.15",
+		"commons-collections4" : "org.apache.commons:commons-collections4:4.4",
+//		// https://mvnrepository.com/artifact/org.apache.commons/commons-math3
+//		"commons-math3": "org.apache.commons:commons-math3:3.6.1",
+		"log4j-core" : "org.apache.logging.log4j:log4j-core:2.13.3",
+		"disruptor" : "com.lmax:disruptor:3.4.2",
+		// https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl
+//		"log4j-slf4j-impl" : "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3",
+		"slf4j-simple" : "org.slf4j:slf4j-simple:1.7.25",
+//		"sentry" : "io.sentry:sentry:1.7.28",
+//		"sigar" : "org.fusesource:sigar:1.6.4",
+//		"jedis" : "redis.clients:jedis:3.1.0",
+//		"mongodb-driver" : "org.mongodb:mongodb-driver:3.11.2",
+//		"mysql-connector" : "mysql:mysql-connector-java:8.0.21",
+//		"protobuf-java" : "com.google.protobuf:protobuf-java:3.7.1",
+//		"protobuf-java-util" : "com.google.protobuf:protobuf-java-util:3.7.1",
+//		"hibernate-core" : "org.hibernate:hibernate-core:5.4.9.Final",
+//		"hibernate-c3p0" : "org.hibernate:hibernate-c3p0:5.4.9.Final",
+//		"mybatis" : "org.mybatis:mybatis:3.5.6",
+		// https://mvnrepository.com/artifact/com.alibaba/fastjson
+		"fastjson": "com.alibaba:fastjson:1.2.75"
+
+	]
+	
+	module_exclude = [
+		"easyexcel" : ['commons-codec', 'commons-collections4']
+	]
+	
+	group_exclude = [
+		"jedis" : ['org.slf4j']
+	]
+	
+}
